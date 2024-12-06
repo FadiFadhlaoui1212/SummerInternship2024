@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Create Employee</title>
+</head>
+<body>
+
+<h2>Create Client</h2>
+<form id="employeeForm">
+    <label for="firstName">First Name:</label>
+    <input type="text" id="firstName" name="firstName"/><br/><br/>
+
+    <label for="lastName">Last Name:</label>
+    <input type="text" id="lastName" name="lastName"/><br/><br/>
+
+    <label for="email">Email:</label>
+    <input type="email" id="email" name="email"/><br/><br/>
+
+    <label for="birthDate">Birth Date</label>
+    <input type="date" id="birthDate" name="birthDate"><br/><br/>
+
+    <label for="livingPlace">Living Place</label>
+    <input type="text" id="livingPlace" name="livingPlace"><br/><br/>
+
+    <label for="birthPlace">Birth Place</label>
+    <input type="text" id="birthPlace" name="birthPlace"><br/><br/>
+
+    <button type="button" onclick="submitClient()">Save</button>
+</form>
+
+<script>
+    function submitClient() {
+        const client = {
+            firstName: document.getElementById("firstName").value,
+            lastName: document.getElementById("lastName").value,
+            email: document.getElementById("email").value,
+            birthDate: document.getElementById("birthDate").value,
+            livingPlace: document.getElementById("livingPlace").value,
+            birthPlace: document.getElementById("birthPlace").value
+        };
+
+        fetch('/api/clients', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(client)
+        })
+        .then(response => {
+            if (response.ok) {
+                alert('Client created successfully!');
+                window.location.href = '/clients';  // Redirect to the clients list page
+            } else {
+                alert('Failed to create client');
+            }
+        })
+        .catch(error => console.error('Error:', error));
+    }
+</script>
+
+</body>
+</html>

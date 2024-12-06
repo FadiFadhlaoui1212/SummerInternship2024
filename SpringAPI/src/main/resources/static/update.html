@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Update Client</title>
+</head>
+<body>
+
+<h2>Update Client</h2>
+<form id="ClientForm">
+  <input type="hidden" id="clientId" name="clientId" />
+
+  <label for="firstName">First Name:</label>
+  <input type="text" id="firstName" name="firstName"/><br/><br/>
+
+  <label for="lastName">Last Name:</label>
+  <input type="text" id="lastName" name="lastName"/><br/><br/>
+
+  <label for="email">Email:</label>
+  <input type="email" id="email" name="email"/><br/><br/>
+
+  <label for="birthDate">Birth Date</label>
+  <input type="date" id="birthDate" name="birthDate"><br/><br/>
+
+  <label for="livingPlace">Living Place</label>
+  <input type="text" id="livingPlace" name="livingPlace"><br/><br/>
+
+  <label for="birthPlace">Birth Place</label>
+  <input type="text" id="birthPlace" name="birthPlace"><br/><br/>
+
+  <button type="button" onclick="updateClient()">Update</button>
+</form>
+
+<script>
+  function getClientIdFromUrl() {
+      const urlParams = new URLSearchParams(window.location.search);
+      return urlParams.get('id');
+  }
+
+  function fetchClient() {
+      const clientId = getClientIdFromUrl();
+      fetch(`/api/clients/${clientId}`)
+          .then(response => response.json())
+          .then(client => {
+              document.getElementById('clientId').value = client.id;
+              document.getElementById('firstName').value = client.firstName;
+              document.getElementById('lastName').value = client.lastName;
+              document.getElementById('email').value = client.email;
+              document.getElementById('birthDate').value = client.birthDate;
+              document.getElementById('livingPlace').value = client.livingPlace;
+              document.getElementById('birthPlace').value = client.birthPlace;
+          })
+          .catch(error => console.error('Error:', error));
+  }
+
+  function updateClient() {
+      const clientId = document.getElementById('clientId').value;
+      const updatedClient = {
+          firstName: document.getElementById('firstName').value,
+          lastName: document.getElementById('lastName').value,
+          email: document.getElementById('email').value,
+          birthDate: document.getElementById('birthDate').value,
+          livingPlace: document.getElementById('livingPlace').value,
+          birthPlace: document.getElementById('birthPlace').value
+      };
+
+      fetch(`/api/clients/${clientId}`, {
+          method: 'PUT',
+          headers: {
+              'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(updatedClient)
+      })
+      .then(response => response.json())
+      .then(data => {
+          if (data && data.id) {
+              alert('Client updated successfully!');
+              window.location.href = '/clients';  // Redirect to the clients list page
+          } else {
+              alert('Failed to update client');
+          }
+      })
+      .catch(error => {
+          console.error('Error:', error);
+          alert('Failed to update client');
+      });
+  }
+
+  // Fetch client details when the page loads
+  document.addEventListener('DOMContentLoaded', fetchClient);
+</script>
+
+</body>
+</html>

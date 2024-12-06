@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Create Employee</title>
+</head>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background-color: #f4f7f6;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+    }
+
+    h2 {
+        text-align: center;
+        color: #2c3e50;
+        margin-bottom: 15px;
+        font-size: 22px;
+    }
+
+    form {
+        background-color: #ffffff;
+        padding: 15px;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        width: 100%;
+        max-width: 350px;
+    }
+
+    label {
+        display: block;
+        margin-bottom: 8px;
+        color: #34495e;
+        font-weight: bold;
+        font-size: 13px;
+        font-family: Arial, sans-serif;
+    }
+
+    input[type="text"],
+    input[type="email"],
+    input[type="password"],
+    input[type="date"] {
+        width: 100%;
+        padding: 8px;
+        margin-bottom: 15px;
+        border: 1px solid #bdc3c7;
+        border-radius: 5px;
+        box-sizing: border-box;
+        font-size: 13px;
+        color: #2c3e50;
+    }
+
+    input[type="text"]:focus,
+    input[type="email"]:focus,
+    input[type="password"]:focus,
+    input[type="date"]:focus {
+        border-color: #27ae60;
+        outline: none;
+        box-shadow: 0 0 5px rgba(39, 174, 96, 0.3);
+    }
+
+    button {
+        width: 100%;
+        padding: 10px;
+        background-color: #27ae60;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 15px;
+        font-family: Arial, sans-serif;
+    }
+
+    button:hover {
+        background-color: #219150;
+    }
+</style>
+<body>
+
+<form id="employeeForm">
+    <label for="firstName">First Name:</label>
+    <input type="text" id="firstName" name="firstName"/><br/><br/>
+
+    <label for="lastName">Last Name:</label>
+    <input type="text" id="lastName" name="lastName"/><br/><br/>
+
+    <label for="email">Email:</label>
+    <input type="email" id="email" name="email"/><br/><br/>
+
+    <label for="password">Password :</label>
+    <input type="password" id="password" name="password"/><br/><br/>
+
+    <label for="birthDate">Birth Date</label>
+    <input type="date" id="birthDate" name="birthDate"><br/><br/>
+
+    <label for="livingPlace">Living Place</label>
+    <input type="text" id="livingPlace" name="livingPlace"><br/><br/>
+
+    <label for="birthPlace">Birth Place</label>
+    <input type="text" id="birthPlace" name="birthPlace"><br/><br/>
+
+    <button type="button" onclick="submitClient()">Save</button>
+</form>
+
+<script>
+    function submitClient() {
+        const client = {
+            firstName: document.getElementById("firstName").value,
+            lastName: document.getElementById("lastName").value,
+            email: document.getElementById("email").value,
+            password: document.getElementById("password").value,
+            birthDate: document.getElementById("birthDate").value,
+            livingPlace: document.getElementById("livingPlace").value,
+            birthPlace: document.getElementById("birthPlace").value
+        };
+
+        fetch('/api/clients', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(client)
+        })
+        .then(response => {
+            if (response.ok) {
+                alert('Client created successfully!');
+                window.location.href = '/clients';  // Redirect to the clients list page
+            } else {
+                alert('Failed to create client');
+            }
+        })
+        .catch(error => console.error('Error:', error));
+    }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Find Client</title>
+</head>
+<body>
+
+<h2>Find Client</h2>
+<form id="clientForm">
+  <label for="clientId">Client ID:</label>
+  <input type="number" id="clientId" name="clientId" required/><br/><br/>
+  <button type="button" onclick="findClient()">Find Client</button>
+</form>
+
+<script>
+  function findClient() {
+      const clientId = document.getElementById('clientId').value;
+      window.location.href = `update.html?id=${clientId}`;
+  }
+</script>
+
+</body>
+</html>

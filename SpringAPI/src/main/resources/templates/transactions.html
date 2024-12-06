@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+    <title>View Transactions</title>
+    <style>
+        .navbar {
+display: flex;
+justify-content: space-around;
+background-color: #4CAF50;
+padding: 10px;
+}
+
+.navbar a {
+color: white;
+text-decoration: none;
+padding: 14px 20px;
+text-align: center;
+}
+
+.navbar a:hover {
+background-color: #45a049;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f9;
+    color: #333;
+    margin: 0;
+    padding: 20px;
+}
+
+h2 {
+    color: #4CAF50; /* Green color for the header */
+    margin-bottom: 20px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: #fff;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+table, th, td {
+    border: 1px solid #ddd;
+}
+
+th, td {
+    padding: 12px;
+    text-align: left;
+}
+
+th {
+    background-color: #4CAF50; /* Green background for headers */
+    color: #fff;
+}
+
+tr:nth-child(even) {
+    background-color: #f2f2f2; /* Light grey for even rows */
+}
+
+tr:hover {
+    background-color: #e0e0e0; /* Light grey on hover */
+}
+
+span {
+    display: block;
+    font-size: 18px;
+    margin-bottom: 20px;
+    color: #333;
+}
+    </style>
+</head>
+<body>
+<span th:text="${id}"></span>
+<h2>Transactions List</h2>
+<p>your Email is <span id="client-email" th:text="${client.email}"></span> </p>
+<button id="logout-button">Log Out</button>
+<table id="transactionsTable">
+    <thead>
+    <tr>
+        <th>Transaction Id</th>
+        <th>Account Number</th>
+        <th>Type</th>
+        <th>Transaction Date</th>
+        <th>Amount</th>
+        <th>Currency</th>
+    </tr>
+    </thead>
+    <tbody>
+    <div class="navbar">
+        <a th:href="@{/greeting/{email}(email=${email})}">Greeting</a>
+        <a th:href="@{/transactions/{email}(email=${email})}">Transaction</a>
+    </div>
+    <!-- Transaction rows will be inserted here -->
+    </tbody>
+</table>
+
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const logoutButton = document.getElementById('logout-button');
+        const email = document.getElementById('client-email').innerText;
+
+        logoutButton.addEventListener('click', function() {
+            fetch(`/api/clients/switchOut/${email}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+            .then(response => {
+                if (response.ok) {
+                    window.location.href = '/authentication'; // Redirect after logout
+                } else {
+                    console.error('Logout failed');
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        });
+    });
+
+    function fetchTransactions() {
+        const id = document.querySelector('span').textContent.trim();
+        fetch(`/transaction/${id}`)
+            .then(response => response.json())
+            .then(data => {
+                const tableBody = document.querySelector('#transactionsTable tbody');
+                tableBody.innerHTML = ''; // Clear existing rows
+                data.forEach(transaction => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${transaction.transaction_id}</td>
+                        <td>${transaction.account.account_number}</td> <!-- Correctly reference account_number -->
+                        <td>${transaction.type}</td>
+                        <td>${transaction.transaction_date}</td>
+                        <td>${transaction.amount}</td>
+                        <td>${transaction.account.currency}</td>
+                    `;
+                    tableBody.appendChild(row);
+                });
+            })
+            .catch(error => console.error('Error:', error));
+    }
+
+    // Fetch transactions when the page loads
+    document.addEventListener('DOMContentLoaded', fetchTransactions);
+</script>
+
+</body>
+</html>

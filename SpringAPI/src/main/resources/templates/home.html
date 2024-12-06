@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Client Details</title>
+    <style>
+        .navbar {
+    display: flex;
+    justify-content: space-around;
+    background-color: #4CAF50;
+    padding: 10px;
+}
+
+.navbar a {
+    color: white;
+    text-decoration: none;
+    padding: 14px 20px;
+    text-align: center;
+}
+
+.navbar a:hover {
+    background-color: #45a049;
+}
+body {
+    font-family: Arial, sans-serif;
+    background-color: #eafaf1;
+    margin: 0;
+    padding: 20px;
+    color: #2e7d32;
+}
+
+h1 {
+    text-align: center;
+    color: #1b5e20;
+}
+
+p {
+    font-size: 18px;
+    margin-bottom: 20px;
+}
+
+label {
+    font-size: 16px;
+    font-weight: bold;
+    color: #2e7d32;
+}
+
+select {
+    padding: 8px;
+    margin-left: 10px;
+    border: 1px solid #9e9e9e;
+    border-radius: 5px;
+    font-size: 16px;
+    background-color: #ffffff;
+    color: #2e7d32;
+}
+
+select:focus {
+    border-color: #388e3c;
+    outline: none;
+    box-shadow: 0 0 5px rgba(0, 128, 0, 0.3);
+}
+
+button {
+    padding: 10px 20px;
+    background-color: #388e3c;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+    margin-top: 20px;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+button:hover {
+    background-color: #2e7d32;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 30px;
+    background-color: #ffffff;
+    box-shadow: 0 0 10px rgba(0, 128, 0, 0.2);
+}
+
+th, td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+th {
+    background-color: #2e7d32;
+    color: white;
+    font-weight: bold;
+}
+
+tr:hover {
+    background-color: #f1f1f1;
+}
+
+tbody tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+    </style>
+</head>
+<body>
+<h1>Client Details</h1>
+<p>Hello, <span th:text="${client.firstName}"></span> <span th:text="${client.lastName}"></span></p>
+<p>your Email is <span id="client-email" th:text="${client.email}"></span> </p>
+<p>Your Account ID is <span th:text="${id}"></span></p>
+<button id="logout-button">Log Out</button>
+
+<!-- Currency Selection Dropdown -->
+<label for="currencySelect">Select Currency:</label>
+<select id="currencySelect">
+    <option value="EUR">Euro</option>
+    <option value="USD">Dollar</option>
+    <option value="GBP">Pound</option>
+</select>
+
+<button onclick="createAccount()">Open a new account</button>
+
+<table id="accountsTable">
+    <thead>
+    <tr>
+        <th>Account Number</th>
+        <th>Balance</th>
+        <th>Close Account</th>
+        <th>Deposit Money</th>
+        <th>Withdraw Money</th>
+        <th>Opening Date</th>
+        <th>Currency</th>
+    </tr>
+    </thead>
+    <tbody>
+    <!-- Navigation bar -->
+    <div class="navbar">
+        <a th:href="@{/greeting/{email}(email=${email})}">Greeting</a>
+        <a th:href="@{/transactions/{email}(email=${email})}">Transaction</a>
+
+    </div>
+    <!-- Account rows will be inserted here -->
+    </tbody>
+</table>
+
+<script th:inline="javascript">
+    document.addEventListener('DOMContentLoaded', function() {
+        const logoutButton = document.getElementById('logout-button');
+        const email = document.getElementById('client-email').innerText;
+
+        logoutButton.addEventListener('click', function() {
+            fetch(`/api/clients/switchOut/${email}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+            .then(response => {
+                if (response.ok) {
+                    window.location.href = '/authentication'; // Redirect after logout
+                } else {
+                    console.error('Logout failed');
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        });
+    });
+
+
+
+function deleteTransactionsByAccountNumber(accountNumber) {
+return fetch(`/transaction/delete/${accountNumber}`, {
+method: 'DELETE',
+headers: {
+'Content-Type': 'application/json'
+}
+})
+.then(response => {
+if (response.ok) {
+console.log('Transactions deleted successfully!');
+return true; // Indicate success
+} else {
+console.error('Failed to delete transactions');
+return false; // Indicate failure
+}
+})
+.catch(error => {
+console.error('Error:', error);
+return false; // Indicate failure
+});
+}
+
+function deleteAccount(accountNumber) {
+deleteTransactionsByAccountNumber(accountNumber)
+.then(success => {
+if (success) {
+fetch(`/account/delete/${accountNumber}`, {
+method: 'DELETE',
+headers: {
+'Content-Type': 'application/json'
+}
+})
+.then(response => {
+if (response.ok) {
+alert('Account deleted successfully!');
+// Optionally, you can refresh the list of accounts or update the UI here
+window.location.reload(); // Reload the page to reflect changes
+} else {
+alert('Failed to delete account');
+}
+})
+.catch(error => console.error('Error:', error));
+} else {
+alert('Failed to delete transactions');
+}
+});
+}
+
+
+function fetchAccountByNumber(accountNumber) {
+return fetch(`/account/${accountNumber}`)
+.then(response => {
+if (!response.ok) {
+    throw new Error('Account not found');
+}
+return response.json();
+})
+.catch(error => {
+console.error('Error fetching account:', error);
+return null;
+});
+}
+
+async function depositMoney(accountNumber) {
+const amount = document.getElementById(`depositAmount-${accountNumber}`).value;
+try {
+const response = await fetch(`/account/deposit/${accountNumber}/${amount}`, {
+method: 'PUT'
+});
+
+if (response.ok) {
+alert('Deposit successful!');
+const account = await fetchAccountByNumber(accountNumber);
+if (account) {
+    createTransaction('Deposit', amount, account);
+}
+window.location.reload();
+} else {
+alert('Failed to deposit money');
+}
+} catch (error) {
+console.error('Error:', error);
+}
+}
+
+async function createAccount() {
+const currency = document.getElementById('currencySelect').value;
+const account = {
+client: {
+id: /*[[${client.id}]]*/,
+firstName: /*[[${client.firstName}]]*/,
+lastName: /*[[${client.lastName}]]*/,
+email: /*[[${client.email}]]*/,
+birthDate: /*[[${client.birthDate}]]*/,
+livingPlace: /*[[${client.livingPlace}]]*/,
+birthPlace: /*[[${client.birthPlace}]]*/
+},
+account_balance: 0,
+currency: currency,
+opening_date: new Date()
+};
+
+try {
+const response = await fetch('/account/create', {
+method: 'POST',
+headers: {
+    'Content-Type': 'application/json'
+},
+body: JSON.stringify(account)
+});
+
+if (response.ok) {
+alert('Account created successfully!');
+window.location.reload();
+} else {
+alert('Failed to create account');
+}
+} catch (error) {
+console.error('Error:', error);
+}
+}
+
+async function withdrawMoney(accountNumber) {
+const amount = document.getElementById(`withdrawAmount-${accountNumber}`).value;
+try {
+const response = await fetch(`/account/withdraw/${accountNumber}/${amount}`, {
+method: 'PUT'
+});
+
+if (response.ok) {
+alert('Withdraw successful!');
+const account = await fetchAccountByNumber(accountNumber);
+if (account) {
+    createTransaction('Withdraw', amount, account);
+}
+window.location.reload();
+} else {
+alert('This account balance is lower than your amount of money');
+}
+} catch (error) {
+console.error('Error:', error);
+}
+}
+
+function createTransaction(type, amount, account) {
+const transaction = {
+type: type,
+transaction_date: new Date(),
+amount: amount,
+account: account
+};
+
+fetch('/transaction/create', {
+method: 'POST',
+headers: {
+'Content-Type': 'application/json'
+},
+body: JSON.stringify(transaction)
+})
+.then(response => response.json())
+.then(data => {
+console.log('Transaction created:', data);
+})
+.catch(error => console.error('Error creating transaction:', error));
+}
+
+function fetchAccountsByClientId(clientId) {
+fetch(`/account/clients/${clientId}`)
+.then(response => response.json())
+.then(data => {
+const tableBody = document.querySelector('#accountsTable tbody');
+tableBody.innerHTML = ''; // Clear existing rows
+data.forEach(account => {
+    const row = document.createElement('tr');
+    row.innerHTML = `
+        <td>${account.account_number}</td>
+        <td>${account.account_balance}</td>
+        <td><button onclick="deleteAccount(${account.account_number})">Close Account</button></td>
+        <td>
+            <input type="number" id="depositAmount-${account.account_number}" placeholder="Enter amount" step="0.01">
+            <button onclick="depositMoney(${account.account_number})">Deposit Money</button>
+        </td>
+        <td>
+            <input type="number" id="withdrawAmount-${account.account_number}" placeholder="Enter amount" step="0.01">
+            <button onclick="withdrawMoney(${account.account_number})">Withdraw Money</button>
+        </td>
+        <td>${account.opening_date}</td>
+        <td>${account.currency}</td>
+    `;
+    tableBody.appendChild(row);
+});
+})
+.catch(error => console.error('Error:', error));
+}
+
+// Call the function with the client's ID from Thymeleaf
+fetchAccountsByClientId([[${id}]]);
+</script>
+
+</body>
+</html>
